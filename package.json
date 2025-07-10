@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@marimo-team/react-finder",
+  "version": "0.1.0",
+  "description": "Headless file explorer components for React, built on react-aria-components",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marimo-team/react-finder.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./adapters/s3": {
+      "import": {
+        "types": "./dist/adapters/s3/index.d.ts",
+        "default": "./dist/adapters/s3/index.js"
+      }
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "vp dev",
+    "demo": "vp build",
+    "preview": "vp preview",
+    "test": "vp test run",
+    "test:watch": "vp test",
+    "test:coverage": "vp test run --coverage",
+    "lint": "vp lint",
+    "lint:fix": "vp lint --fix",
+    "fmt": "vp fmt",
+    "fmt:check": "vp fmt --check",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p demo/tsconfig.json",
+    "check": "vp check && pnpm run typecheck",
+    "build": "vp pack",
+    "prepublishOnly": "pnpm run check && pnpm run test && pnpm run build && pnpm run check:package",
+    "release": "pnpm version",
+    "prepare": "vp config --no-agent",
+    "check:package": "publint && attw --pack . --profile esm-only",
+    "clean": "rm -rf dist demo/dist node_modules/.vite"
+  },
+  "dependencies": {
+    "react-aria-components": "^1.20.0",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@aws-sdk/client-s3": "^3.1117.0",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.6",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.1.6",
+    "@vitest/coverage-v8": "catalog:",
+    "jsdom": "^30.0.1",
+    "publint": "^0.3.24",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "typescript": "^7.0.2",
+    "vite": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "@aws-sdk/client-s3": "^3.0.0",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@aws-sdk/client-s3": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@10.15.1"
+}

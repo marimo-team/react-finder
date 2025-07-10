@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "isolatedDeclarations": false,
+    "noEmit": true,
+    "rootDir": "..",
+    "types": [],
+    "paths": {
+      "@marimo-team/react-finder": ["../src/index.ts"],
+      "@marimo-team/react-finder/adapters/s3": ["../src/adapters/s3/index.ts"]
+    }
+  },
+  "include": ["."],
+  "exclude": ["./dist"]
+}
