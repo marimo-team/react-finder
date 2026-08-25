@@ -4,10 +4,14 @@ import { defineConfig } from "vite-plus";
 
 const src = fileURLToPath(new URL("src", import.meta.url));
 
+// Demo base path. Locally the gallery lives at /demo/; the GitHub Pages workflow sets
+// DEMO_BASE_PATH from `actions/configure-pages` ("" for a root site, "/<repo>" otherwise).
+const demoBase = process.env.DEMO_BASE_PATH ?? "/demo";
+
 export default defineConfig({
   // The Vite app is the demo gallery; the library itself is built with `vp pack`.
   root: process.env.VITEST ? "." : "demo",
-  base: "/demo/",
+  base: `${demoBase}/`,
   resolve: {
     alias: {
       "@marimo-team/react-finder/adapters/s3": `${src}/adapters/s3/index.ts`,
