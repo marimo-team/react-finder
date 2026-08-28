@@ -1,0 +1,53 @@
+name: Release
+
+# Publishes to npm via trusted publishing (OIDC): no NPM_TOKEN secret.
+# The npm package must list this repo + workflow file as a trusted publisher
+# (npmjs.com → package → Settings → Trusted Publisher).
+#
+# Cut a release with:
+#   pnpm release <patch|minor|major>   # bumps package.json and creates the v* tag
+#   git push --follow-tags
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write # required to mint the OIDC token for npm
+    env:
+      VP_GIT_HOOKS: "0"
+    steps:
+      - uses: actions/checkout@v5
+
+      # Installs Vite+, Node and pnpm (from package.json "packageManager") with dependency caching.
+      - uses: voidzero-dev/setup-vp@1b32467adbe183473499fd9d5d372c3ed9641754 # v1.18.0
+        with:
+          node-version: "22"
+          cache: true
+
+      - run: vp install --frozen-lockfile
+
+      - name: Check tag matches package.json version
+        run: |
+          pkg="v$(node -p "require('./package.json').version")"
+          tag="${GITHUB_REF_NAME}"
+          if [ "$pkg" != "$tag" ]; then
+            echo "::error::package.json version ($pkg) does not match tag ($tag)"
+            exit 1
+          fi
+
+      # pnpm exchanges the GitHub OIDC token for a short-lived npm token; npm
+      # attaches provenance automatically. `prepublishOnly` runs check,
+      # typecheck, tests, build and publint/attw before the upload.
+      - name: Publish
+        run: pnpm publish --access public --no-git-checks
