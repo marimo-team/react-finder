@@ -1,0 +1,136 @@
+name: Release
+
+# Publishes to npm via trusted publishing (OIDC): no NPM_TOKEN secret.
+# The npm package lists this repo + workflow file + the `npm` environment as
+# a trusted publisher (npmjs.com → package → Settings → Trusted Publisher).
+#
+# Cut a release with:
+#   pnpm release <patch|minor|major>   # bumps package.json and creates the v* tag
+#   git push --follow-tags
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions: {}
+
+env:
+  VP_GIT_HOOKS: "0"
+
+jobs:
+  build:
+    name: 🏗️ Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      # Installs Vite+, Node and pnpm (from package.json "packageManager") with dependency caching.
+      - uses: voidzero-dev/setup-vp@1b32467adbe183473499fd9d5d372c3ed9641754 # v1.18.0
+        with:
+          node-version: "22"
+          cache: true
+
+      - name: 📥 Install dependencies
+        run: vp install --frozen-lockfile
+
+      - name: 🏷️ Check tag matches package.json version
+        run: |
+          pkg="v$(node -p "require('./package.json').version")"
+          tag="${GITHUB_REF_NAME}"
+          if [ "$pkg" != "$tag" ]; then
+            echo "::error::package.json version ($pkg) does not match tag ($tag)"
+            exit 1
+          fi
+
+      - name: 🧹 Format, lint, type-check
+        run: vp check
+
+      - name: 🔍 Typecheck (tsc, library + demo)
+        run: vp run typecheck
+
+      - name: 🧪 Test
+        run: vp test run
+
+      - name: 🏗️ Build library
+        run: vp pack
+
+      - name: 📦 Validate package exports
+        run: vp run check:package
+
+      - name: 📤 Upload package artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: package
+          path: |
+            dist/
+            package.json
+            README.md
+            LICENSE
+          retention-days: 1
+          if-no-files-found: error
+
+  publish:
+    name: 📦 Publish to npm
+    needs: build
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write # mints the OIDC token that pnpm exchanges for a publish token
+    steps:
+      - name: 📥 Download package artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: package
+
+      - name: ⎔ Setup pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6
+
+      - name: ⎔ Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22
+
+      # The build job already ran the checks; --ignore-scripts skips prepublishOnly.
+      # npm attaches provenance automatically for trusted publishes.
+      - name: 🚀 Publish
+        run: pnpm publish --access public --no-git-checks --ignore-scripts
+
+  release-notes:
+    name: 📝 GitHub release
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+
+      - name: ⎔ Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22
+
+      - name: 📝 Create release from conventional commits
+        run: npx changelogithub@14.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  notify:
+    name: 📣 Notify
+    needs: [build, publish, release-notes]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: 📣 Notify release result
+        uses: marimo-team/internal-gh-actions/release-notification@91f15bebd3f322db6717ba5a17983928a47ec991 # main
+        with:
+          status: ${{ (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')) && 'failure' || 'success' }}
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL_RELEASES }}
+          artifact-url: "https://npmjs.com/package/@marimo-team/react-finder"
