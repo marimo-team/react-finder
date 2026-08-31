@@ -19,7 +19,7 @@ jobs:
     env:
       VP_GIT_HOOKS: "0"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       # Installs Vite+, Node and pnpm (from package.json "packageManager") with dependency caching.
       - uses: voidzero-dev/setup-vp@1b32467adbe183473499fd9d5d372c3ed9641754 # v1.18.0
