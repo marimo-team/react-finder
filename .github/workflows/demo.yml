@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v5
 
       # Installs Vite+, Node and pnpm (from package.json "packageManager") with dependency caching.
-      - uses: voidzero-dev/setup-vp@0cffb0a1ac50daa1541b57d1eb7c843f479522e1 # v1.18.0
+      - uses: voidzero-dev/setup-vp@1b32467adbe183473499fd9d5d372c3ed9641754 # v1.18.0
         with:
           node-version: "22"
           cache: true
