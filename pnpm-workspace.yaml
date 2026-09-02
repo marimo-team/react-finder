@@ -19,6 +19,17 @@ minimumReleaseAge: 20160
 verifyDepsBeforeRun: install
 blockExoticSubdeps: true
 trustPolicy: no-downgrade
+# Packages whose currently-required version is necessarily newer than the
+# 14-day minimumReleaseAge cutoff, because a pin or a semver floor forces it:
+#   - vite-plus / @voidzero-dev/*  pinned to 0.3.0 by the catalog above
+#   - @aws-sdk/* + @smithy/*       floor is `@aws-sdk/client-s3: ^3.1117.0`
+#   - @testing-library/user-event  floor is `^14.6.6`
+# Everything else stays subject to the age policy.
 minimumReleaseAgeExclude:
   - "@marimo-team/*"
+  - "vite-plus"
+  - "@voidzero-dev/*"
+  - "@aws-sdk/*"
+  - "@smithy/*"
+  - "@testing-library/user-event"
 onlyBuiltDependencies: []
