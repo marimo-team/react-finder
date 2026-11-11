@@ -30,7 +30,7 @@ jobs:
       # Installs Vite+, Node and pnpm (from package.json "packageManager") with dependency caching.
       - uses: voidzero-dev/setup-vp@1b32467adbe183473499fd9d5d372c3ed9641754 # v1.18.0
         with:
-          node-version: "22"
+          node-version: "26"
           cache: true
 
       - name: 📥 Install dependencies
@@ -92,7 +92,7 @@ jobs:
       - name: ⎔ Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: 24
+          node-version: 26
 
       # The build job already ran the checks; --ignore-scripts skips prepublishOnly.
       # npm attaches provenance automatically for trusted publishes.
@@ -113,7 +113,7 @@ jobs:
       - name: ⎔ Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: 24
+          node-version: 26
 
       - name: 📝 Create release from conventional commits
         run: npx changelogithub@14.0.0
