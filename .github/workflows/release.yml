@@ -21,7 +21,7 @@ env:
 jobs:
   build:
     name: 🏗️ Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-p-small
     permissions:
       contents: read
     steps:
@@ -75,7 +75,7 @@ jobs:
   publish:
     name: 📦 Publish to npm
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-p-small
     environment: npm
     permissions:
       contents: read
@@ -102,7 +102,7 @@ jobs:
   release-notes:
     name: 📝 GitHub release
     needs: publish
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-p-small
     permissions:
       contents: write
     steps:
@@ -124,7 +124,7 @@ jobs:
     name: 📣 Notify
     needs: [build, publish, release-notes]
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-p-small
     permissions:
       contents: read
     steps:
