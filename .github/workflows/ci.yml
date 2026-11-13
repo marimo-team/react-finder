@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   ci:
-    runs-on: ubuntu-p-small
+    runs-on: "${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}"
     env:
       VP_GIT_HOOKS: "0"
     steps:
