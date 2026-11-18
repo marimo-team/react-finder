@@ -4,9 +4,7 @@ name: Release
 # The npm package lists this repo + workflow file + the `npm` environment as
 # a trusted publisher (npmjs.com → package → Settings → Trusted Publisher).
 #
-# Cut a release with:
-#   pnpm release <patch|minor|major>   # bumps package.json and creates the v* tag
-#   git push --follow-tags
+# Request a release with: pnpm release patch
 
 on:
   push:
@@ -26,6 +24,14 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate release tag
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: marimo-team/internal-gh-actions/validate-release@3a52681ab8e200a34175ec8e5d14985e4e7ce3c3
+        with:
+          manifest: package.json
 
       # Installs Vite+, Node and pnpm (from package.json "packageManager") with dependency caching.
       - uses: voidzero-dev/setup-vp@1b32467adbe183473499fd9d5d372c3ed9641754 # v1.18.0
@@ -35,15 +41,6 @@ jobs:
 
       - name: 📥 Install dependencies
         run: vp install --frozen-lockfile
-
-      - name: 🏷️ Check tag matches package.json version
-        run: |
-          pkg="v$(node -p "require('./package.json').version")"
-          tag="${GITHUB_REF_NAME}"
-          if [ "$pkg" != "$tag" ]; then
-            echo "::error::package.json version ($pkg) does not match tag ($tag)"
-            exit 1
-          fi
 
       - name: 🧹 Format, lint, type-check
         run: vp check
@@ -129,8 +126,8 @@ jobs:
       contents: read
     steps:
       - name: 📣 Notify release result
-        uses: marimo-team/internal-gh-actions/release-notification@91f15bebd3f322db6717ba5a17983928a47ec991 # main
+        uses: marimo-team/internal-gh-actions/release-notification@3a52681ab8e200a34175ec8e5d14985e4e7ce3c3
         with:
-          status: ${{ (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')) && 'failure' || 'success' }}
+          results: ${{ toJSON(needs) }}
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL_RELEASES }}
           artifact-url: "https://npmjs.com/package/@marimo-team/react-finder"
