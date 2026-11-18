@@ -48,7 +48,7 @@
     "check": "vp check && pnpm run typecheck",
     "build": "vp pack",
     "prepublishOnly": "pnpm run check && pnpm run test && pnpm run build && pnpm run check:package",
-    "release": "pnpm version",
+    "release": "bash scripts/release.sh",
     "prepare": "vp config --no-agent",
     "check:package": "publint && attw --pack . --profile esm-only",
     "clean": "rm -rf dist demo/dist node_modules/.vite"
